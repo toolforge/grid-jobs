@@ -32,9 +32,7 @@ app = flask.Flask(__name__)
 def home():
     try:
         cached = 'purge' not in flask.request.args
-        remove_migrated = 'all' not in flask.request.args
-        ctx = grid_jobs.get_view_data(
-            days=7, cached=cached, remove_migrated=remove_migrated)
+        ctx = grid_jobs.get_view_data(days=7, cached=cached)
         return flask.render_template('home.html', **ctx)
     except Exception:
         traceback.print_exc()
@@ -44,9 +42,7 @@ def home():
 @app.route('/json')
 def json_dump():
     return flask.json.jsonify(
-        grid_jobs.get_view_data(
-            days=7, cached=False, remove_migrated=True
-        )
+        grid_jobs.get_view_data(days=7, cached=False)
     )
 
 
