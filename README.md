@@ -11,10 +11,7 @@ Clone repo and create basic files:
 bastion$ become grid-jobs
 tools.grid-jobs@bastion:~$ mkdir -p ~/www/python
 tools.grid-jobs@bastion:~$ git clone https://phabricator.wikimedia.org/source/tool-grid-jobs.git ~/www/python/src
-tools.grid-jobs@bastion:~$ touch ~/redis-prefix.conf
-tools.grid-jobs@bastion:~$ chmod 600 ~/redis-prefix.conf
 ```
-And edit `~/redis-prefix.conf` with a text editor.
 
 Create virtualenv inside kubernetes:
 ```
