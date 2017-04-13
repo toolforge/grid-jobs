@@ -39,10 +39,25 @@ def home():
         raise
 
 
+@app.route('/tool/<name>')
+def tool(name):
+    gd = grid_jobs.get_view_data()
+    ctx = {
+        'tool_name': name,
+        'generated': gd['generated'],
+    }
+    try:
+        ctx['tool_data'] = gd['tools'][name]
+    except KeyError:
+        flask.abort(404)
+    return flask.render_template('tool.html', **ctx)
+
+
 @app.route('/json')
 def json_dump():
+    cached = 'purge' not in flask.request.args
     return flask.json.jsonify(
-        grid_jobs.get_view_data(days=7, cached=False)
+        grid_jobs.get_view_data(days=7, cached=cached)
     )
 
 

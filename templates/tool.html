@@ -1,0 +1,37 @@
+{% extends "layout.html" %}
+{% block body %}
+<h1>Jobs run by {{ tool_name }} in the last 7 days</h1>
+
+<dl>
+  <dt>Tool</dt>
+  <dd>{{ tool_name }}</dd>
+  <dt>Members</dt>
+  <dd class="members">
+    <ul>
+      {% for member in tool_data.members %}
+      <li><a href="https://tools.wmflabs.org/contact/search/{{ member|urlencode }}">{{ member }}</a></li>
+      {% endfor %}
+    </ul>
+  </dd>
+</dl>
+
+<table id="jobs">
+  <thead>
+    <tr>
+      <th>Job</th>
+      <th>Total seen</th>
+      <th>Last seen (exit)</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for job, data in tool_data.jobs|dictsort %}
+    <tr>
+      <td class="job-name">{{ job }}</td>
+      <td class="seen">{{ data.count }}</td>
+      <td class="last">{{ data.last }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<p>Last updated: <var>{{ generated }}</var></p>
+{% endblock %}
