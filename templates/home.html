@@ -1,16 +1,11 @@
 {% extends "layout.html" %}
 {% block body %}
-<h1>Tools running jobs on Precise OGE hosts in last 7 days</h1>
+<h1>Tools running jobs on OGE hosts in the last 7 days</h1>
 
-<h2>All Precise grid engine hosts have been deleted.</h2>
-
-<p>All webservices and other jobs that were still running on Precise when the
-hosts were deleted will need manual intervention from their maintainers. See <a href="https://wikitech.wikimedia.org/wiki/Tools_Precise_deprecation">Tools Precise deprecation</a> for information on migrating your tool to Trusty or Kubernetes.</p>
-
-<p>Total tools that were running on Precise: <var>{{ tools|count }}</var></p>
+<p>Total tools that were running: <var>{{ tools|count }}</var></p>
 <p>Last updated: <var>{{ generated }}</var></p>
 
-<table id="precise">
+<table id="jobs">
   <thead>
     <tr>
       <th>Tool</th>
@@ -23,12 +18,12 @@ hosts were deleted will need manual intervention from their maintainers. See <a 
     {% for tool_name, tool_data in tools|dictsort %}
     <tr>
       <td rowspan="{{ tool_data.jobs|count }}" id="{{ tool_name }}" class="tool-name">
-        <a href="//tools.wmflabs.org/?tool={{ tool_name|urlencode }}">{{ tool_name }}</a>
+        <a href="https://tools.wmflabs.org/?tool={{ tool_name|urlencode }}">{{ tool_name }}</a>
         <div class='members'>
           members:
           <ul>
             {% for member in tool_data.members %}
-            <li><a href="//tools.wmflabs.org/contact/search/{{ member|urlencode }}">{{ member }}</a></li>
+            <li><a href="https://tools.wmflabs.org/contact/search/{{ member|urlencode }}">{{ member }}</a></li>
             {% endfor %}
           </ul>
         </div>

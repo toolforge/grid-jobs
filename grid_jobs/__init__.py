@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# This file is part of precise-tools
+# This file is part of grid-jobs
 # Copyright (C) 2017 Bryan Davis and contributors
 #
 # This program is free software: you can redistribute it and/or modify it
@@ -39,14 +39,13 @@ ACCOUNTING_FIELDS = [
 CACHE = utils.Cache()
 
 
-def tools_from_accounting(days, remove_migrated):
+def tools_from_accounting(days):
     """Get a list of (tool, job name, count, last) tuples for jobs running on
-    precise exec nodes in the last N days."""
+    exec nodes in the last N days."""
     delta = datetime.timedelta(days=days)
     cutoff = int(utils.totimestamp(datetime.datetime.now() - delta))
     jobs = collections.defaultdict(lambda: collections.defaultdict(list))
     files = [
-        '/data/project/.system/accounting.1',  # oops, file got rotated
         '/data/project/.system/accounting'
     ]
     for f in files:
@@ -59,17 +58,7 @@ def tools_from_accounting(days, remove_migrated):
             tool = job['owner']
             if tool is not None:
                 name = job['job_name']
-                if 'release=precise' in job['category']:
-                    jobs[tool][name].append(int(job['end_time']))
-                elif remove_migrated:
-                    # Delete any precise jobs already seen that have the same
-                    # owner and name so that a job fixed by the maintainers
-                    # drops off the list.
-                    try:
-                        del jobs[tool][normalize_jobname(name)]
-                    except KeyError:
-                        # defaultdict does not prevent KeyError on del
-                        pass
+                jobs[tool][name].append(int(job['end_time']))
 
     tools = []
     for tool_name, tool_jobs in jobs.iteritems():
@@ -85,19 +74,14 @@ def tools_from_accounting(days, remove_migrated):
     return tools
 
 
-def is_precise_host(hostname):
-    if hostname[-4:-2] == '12':
-        return True
-
-
 def gridengine_status():
     """Get a list of (tool, job name, host) tuples for jobs currently running
-    on precise and trusty exec nodes, partitioned into a tuple of two lists."""
+    on exec nodes."""
     conn = httplib.HTTPConnection('tools.wmflabs.org')
     conn.request(
         'GET', '/gridengine-status',
         headers={
-            'User-Agent': 'https://tools.wmflabs.org/precise-tools/'
+            'User-Agent': 'https://tools.wmflabs.org/grid-jobs/'
         }
     )
     res = conn.getresponse().read()
@@ -109,28 +93,18 @@ def gridengine_status():
             tools.extend([
                 (
                     normalize_toolname(job['job_owner']),
-                    normalize_jobname(job['job_name']),
+                    job['job_name'],
                     host
                 )
                 for job in info['jobs'].values()
             ])
-
-    return utils.partition(lambda job: is_precise_host(job[2]), tools)
+    return tools
 
 
 def normalize_toolname(name):
     if name.startswith('tools.'):
         return name[6:]
     # else None -- we ignore non-tool accounts like 'root'
-
-
-def normalize_jobname(name):
-    if (
-        name.startswith('lighttpd-') and
-        not name.startswith('lighttpd-precise-')
-    ):
-        name = name.replace('lighttpd-', 'lighttpd-precise-', 1)
-    return name
 
 
 def tools_members(tools):
@@ -157,9 +131,9 @@ def tools_members(tools):
     return tool_to_members
 
 
-def get_view_data(days=7, cached=True, remove_migrated=True):
+def get_view_data(days=7, cached=True):
     """Get a structured collection of data about tools that are running on
-    precise grid nodes.
+    grid nodes.
 
     Return value will be a structure something like:
         {
@@ -188,8 +162,7 @@ def get_view_data(days=7, cached=True, remove_migrated=True):
         }
     """
 
-    cache_key = 'maindict:days={}:remove_migrated={}'.format(
-        days, remove_migrated)
+    cache_key = 'maindict:days={}'.format(days)
     ctx = CACHE.load(cache_key) if cached else None
     if ctx is None:
         date_fmt = '%Y-%m-%d %H:%M'
@@ -201,23 +174,12 @@ def get_view_data(days=7, cached=True, remove_migrated=True):
             'members': [],
         })
 
-        for rec in tools_from_accounting(days, remove_migrated):
+        for rec in tools_from_accounting(days):
             tools[rec[0]]['jobs'][rec[1]]['count'] += rec[2]
             tools[rec[0]]['jobs'][rec[1]]['last'] = (
                 datetime.datetime.fromtimestamp(rec[3]).strftime(date_fmt))
 
-        grid_precise, grid_trusty = gridengine_status()
-
-        if remove_migrated:
-            # Delete any precise jobs already seen that have the same owner and
-            # name so that a job fixed by the maintainers drops off the list.
-            for tool, name, host in grid_trusty:
-                if tool in tools and name in tools[tool]['jobs']:
-                    del tools[tool]['jobs'][name]
-                    if not tools[tool]['jobs']:
-                        del tools[tool]
-
-        for rec in grid_precise:
+        for rec in gridengine_status():
             tools[rec[0]]['jobs'][rec[1]]['count'] += 1
             tools[rec[0]]['jobs'][rec[1]]['last'] = 'Currently running'
 

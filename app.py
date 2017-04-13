@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 #
-# This file is part of precise-tools
+# This file is part of grid-jobs
 # Copyright (C) 2017 Bryan Davis and contributors
 #
 # This program is free software: you can redistribute it and/or modify it
@@ -22,7 +22,7 @@ import traceback
 import flask
 import flask.json
 
-import precise_tools
+import grid_jobs
 
 
 app = flask.Flask(__name__)
@@ -33,7 +33,7 @@ def home():
     try:
         cached = 'purge' not in flask.request.args
         remove_migrated = 'all' not in flask.request.args
-        ctx = precise_tools.get_view_data(
+        ctx = grid_jobs.get_view_data(
             days=7, cached=cached, remove_migrated=remove_migrated)
         return flask.render_template('home.html', **ctx)
     except Exception:
@@ -44,7 +44,7 @@ def home():
 @app.route('/json')
 def json_dump():
     return flask.json.jsonify(
-        precise_tools.get_view_data(
+        grid_jobs.get_view_data(
             days=7, cached=False, remove_migrated=True
         )
     )

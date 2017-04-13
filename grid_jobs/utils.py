@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# This file is part of precise-tools
+# This file is part of grid-jobs
 # Copyright (C) 2017 Bryan Davis and contributors
 #
 # This program is free software: you can redistribute it and/or modify it
@@ -19,6 +19,7 @@
 from __future__ import division
 
 import datetime
+import hashlib
 import json
 import os
 
@@ -29,9 +30,10 @@ import redis
 class Cache(object):
     def __init__(self, enabled=True):
         self.enabled = enabled
-        self.conn = redis.Redis(host='tools-redis')
-        with open(os.path.expanduser('~/redis-prefix.conf'), 'r') as f:
-            self.prefix = f.read()
+        self.conn = redis.Redis(host='tools-redis', decode_responses=True)
+        u = pwd.getpwuid(os.getuid())
+        self.prefix = hashlib.sha1(
+            '{}.{}'.format(u.pw_name, u.pw_dir).encode('utf-8')).hexdigest()
 
     def key(self, val):
         return '%s%s' % (self.prefix, val)
@@ -88,9 +90,8 @@ def ldap_conn():
         ldap3.Server('ldap-labs.eqiad.wikimedia.org'),
         ldap3.Server('ldap-labs.codfw.wikimedia.org'),
     ], ldap3.ROUND_ROBIN, active=True, exhaust=True)
-    return ldap3.Connection(servers,
-                            read_only=True,
-                            auto_bind=True)
+    return ldap3.Connection(
+        servers, read_only=True, auto_bind=True)
 
 
 def uid_from_dn(dn):
@@ -98,10 +99,3 @@ def uid_from_dn(dn):
     uid_key = keys[0]
     uid = uid_key.split('=')[1]
     return uid
-
-
-def partition(func, seq):
-    # Source: https://stackoverflow.com/a/4579086
-    # Just so elegant!
-    return reduce(lambda cum, item: cum[not func(item)].append(item) or cum,
-                  seq, ([], []))
