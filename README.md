@@ -15,8 +15,8 @@ tools.grid-jobs@bastion:~$ git clone https://phabricator.wikimedia.org/source/to
 
 Create virtualenv inside kubernetes:
 ```
-tools.grid-jobs@bastion:~$ webservice --backend=kubernetes python2 shell
-tools.grid-jobs@interactive:~$ virtualenv ~/www/python/venv
+tools.grid-jobs@bastion:~$ webservice --backend=kubernetes python shell
+tools.grid-jobs@interactive:~$ python3 -m venv ~/www/python/venv
 tools.grid-jobs@interactive:~$ source ~/www/python/venv/bin/activate
 (venv)tools.grid-jobs@interactive:~$ pip install -U pip
 (venv)tools.grid-jobs@interactive:~$ pip install -r ~/www/python/src/requirements.txt
@@ -24,7 +24,7 @@ tools.grid-jobs@interactive:~$ source ~/www/python/venv/bin/activate
 
 Back to bastion, start the webservice:
 ```
-tools.grid-jobs@bastion:~$ webservice --backend=kubernetes python2 start
+tools.grid-jobs@bastion:~$ webservice --backend=kubernetes python start
 ```
 
 License
