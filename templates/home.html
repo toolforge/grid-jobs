@@ -2,14 +2,13 @@
 {% block body %}
 <h1>Tools running jobs on OGE hosts in the last 7 days</h1>
 
-<p>Total tools that were running: <var>{{ tools|count }}</var></p>
+<p>Total tools that ran jobs: <var>{{ tools|count }}</var></p>
 <p>Last updated: <var>{{ generated }}</var></p>
 
 <table id="jobs">
   <thead>
     <tr>
       <th>Tool</th>
-      <th>Job</th>
       <th>Total seen</th>
       <th>Last seen (exit)</th>
     </tr>
@@ -17,24 +16,10 @@
   <tbody>
     {% for tool_name, tool_data in tools|dictsort %}
     <tr>
-      <td rowspan="{{ tool_data.jobs|count }}" id="{{ tool_name }}" class="tool-name">
-        <a href="https://tools.wmflabs.org/?tool={{ tool_name|urlencode }}">{{ tool_name }}</a>
-        <div class='members'>
-          members:
-          <ul>
-            {% for member in tool_data.members %}
-            <li><a href="https://tools.wmflabs.org/contact/search/{{ member|urlencode }}">{{ member }}</a></li>
-            {% endfor %}
-          </ul>
-        </div>
+      <td id="{{ tool_name }}" class="tool-name">
+          <a href="{{ url_for('tool', name=tool_name) }}">{{ tool_name }}</a>
       </td>
-      {% for job, data in tool_data.jobs|dictsort %}
-        {% if not loop.first %}<tr>{% endif %}
-        <td class="job-name">{{ job }}</td>
-        <td class="seen">{{ data.count }}</td>
-        <td class="last">{{ data.last }}</td>
-        {% if not loop.last %}</tr>{% endif %}
-      {% endfor %}
+      <td class="seen">{{ tool_data.jobs|sum(attribute='count') }}</td>
     </tr>
     {% endfor %}
   </tbody>
