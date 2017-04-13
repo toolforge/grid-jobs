@@ -61,10 +61,10 @@ def tools_from_accounting(days):
                 jobs[tool][name].append(int(job['end_time']))
 
     tools = []
-    for tool_name, tool_jobs in jobs.iteritems():
+    for tool_name, tool_jobs in jobs.items():
         tool_name = normalize_toolname(tool_name)
         if tool_name is not None:
-            for job_name, job_starts in tool_jobs.iteritems():
+            for job_name, job_starts in tool_jobs.items():
                 tools.append((
                     tool_name,
                     job_name,
@@ -88,7 +88,7 @@ def gridengine_status():
     grid_info = json.loads(res)['data']['attributes'] if res else {}
 
     tools = []
-    for host, info in grid_info.iteritems():
+    for host, info in grid_info.items():
         if info['jobs']:
             tools.extend([
                 (
