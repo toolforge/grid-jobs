@@ -85,7 +85,9 @@ def gridengine_status():
         }
     )
     res = conn.getresponse().read()
-    grid_info = json.loads(res)['data']['attributes'] if res else {}
+    grid_info = {}
+    if res:
+        grid_info = json.loads(res.decode('utf-8'))['data']['attributes']
 
     tools = []
     for host, info in grid_info.items():
