@@ -27,6 +27,13 @@ Back to bastion, start the webservice:
 tools.grid-jobs@bastion:~$ webservice --backend=kubernetes python start
 ```
 
+Creating the list is pretty expensive and we don't need it to be a real time
+display, so a nice thing to do is setup a cron job to collect new data once an
+hour:
+```
+21 * * * * jstart -N update-cache curl 'https://tools.wmflabs.org/grid-jobs/?purge'
+```
+
 License
 -------
 [GNU GPLv3+](//www.gnu.org/copyleft/gpl.html "GNU GPLv3+")
