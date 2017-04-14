@@ -9,16 +9,16 @@
   <thead>
     <tr>
       <th>Tool</th>
-      <th>Jobs seen</th>
+      <th data-sort-method="number" data-sort-default>Jobs seen</th>
     </tr>
   </thead>
   <tbody>
     {% for name, job_count in tools|dictsort %}
     <tr>
-      <td id="{{ name }}" class="tool-name" data-sort-default>
+      <td id="{{ name }}" class="tool-name">
           <a href="{{ url_for('tool', name=name) }}">{{ name }}</a>
       </td>
-      <td class="seen" data-sort-method="number">{{ job_count }}</td>
+      <td class="seen">{{ job_count }}</td>
     </tr>
     {% endfor %}
   </tbody>
@@ -29,6 +29,6 @@
 <script src="https://tools-static.wmflabs.org/cdnjs/ajax/libs/tablesort/5.0.0/tablesort.min.js"></script>
 <script src="https://tools-static.wmflabs.org/cdnjs/ajax/libs/tablesort/5.0.0/src/sorts/tablesort.number.js"></script>
 <script>
-    new Tablesort(document.getElementById('jobs'));
+    new Tablesort(document.getElementById('jobs'), {descending: true});
 </script>
 {% endblock %}
