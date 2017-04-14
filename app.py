@@ -32,7 +32,14 @@ app = flask.Flask(__name__)
 def home():
     try:
         cached = 'purge' not in flask.request.args
-        ctx = grid_jobs.get_view_data(days=7, cached=cached)
+        gd = grid_jobs.get_view_data(days=7, cached=cached)
+        ctx = {
+            'generated': gd['generated'],
+            'tools': {
+                name: sum(j['count'] for j in tool['jobs'].values())
+                for name, tool in gd['tools'].items()
+            }
+        }
         return flask.render_template('home.html', **ctx)
     except Exception:
         traceback.print_exc()

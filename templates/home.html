@@ -9,17 +9,16 @@
   <thead>
     <tr>
       <th>Tool</th>
-      <th>Total seen</th>
-      <th>Last seen (exit)</th>
+      <th>Jobs seen</th>
     </tr>
   </thead>
   <tbody>
-    {% for tool_name, tool_data in tools|dictsort %}
+    {% for name, job_count in tools|dictsort %}
     <tr>
-      <td id="{{ tool_name }}" class="tool-name">
-          <a href="{{ url_for('tool', name=tool_name) }}">{{ tool_name }}</a>
+      <td id="{{ name }}" class="tool-name">
+          <a href="{{ url_for('tool', name=name) }}">{{ name }}</a>
       </td>
-      <td class="seen">{{ tool_data.jobs|sum(attribute='count') }}</td>
+      <td class="seen">{{ job_count }}</td>
     </tr>
     {% endfor %}
   </tbody>
