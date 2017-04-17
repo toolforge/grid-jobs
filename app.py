@@ -35,11 +35,13 @@ def home():
         gd = grid_jobs.get_view_data(days=7, cached=cached)
         ctx = {
             'generated': gd['generated'],
-            'tools': {
-                name: sum(j['count'] for j in tool['jobs'].values())
-                for name, tool in gd['tools'].items()
-            }
+            'tools': {},
         }
+        for name, tool in gd['tools'].items():
+            ctx['tools'][name] = {
+                'seen': sum(j['count'] for j in tool['jobs'].values()),
+                'unique': len(tool['jobs'].values()),
+            }
         return flask.render_template('home.html', **ctx)
     except Exception:
         traceback.print_exc()

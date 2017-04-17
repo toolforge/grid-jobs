@@ -9,16 +9,18 @@
   <thead>
     <tr>
       <th>Tool</th>
+      <th data-sort-method="number">Unique jobs</th>
       <th data-sort-method="number" data-sort-default>Jobs seen</th>
     </tr>
   </thead>
   <tbody>
-    {% for name, job_count in tools|dictsort %}
+    {% for name, data in tools|dictsort %}
     <tr>
       <td id="{{ name }}" class="tool-name">
           <a href="{{ url_for('tool', name=name) }}">{{ name }}</a>
       </td>
-      <td class="seen">{{ job_count }}</td>
+      <td class="number">{{ data.unique }}</td>
+      <td class="number">{{ data.seen }}</td>
     </tr>
     {% endfor %}
   </tbody>

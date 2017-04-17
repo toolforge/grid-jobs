@@ -28,9 +28,9 @@
   <tbody>
     {% for job, data in tool_data.jobs|dictsort %}
     <tr>
-      <td class="job-name">{{ job }}</td>
-      <td class="seen">{{ data.count }}</td>
-      <td class="last">{{ data.last }}</td>
+      <td>{{ job }}</td>
+      <td class="number">{{ data.count }}</td>
+      <td>{{ data.last }}</td>
     </tr>
     {% endfor %}
   </tbody>
