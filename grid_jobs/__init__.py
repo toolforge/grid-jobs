@@ -106,8 +106,7 @@ def gridengine_status():
 def normalize_toolname(name):
     if name.startswith('tools.'):
         return name[6:]
-    # else None -- we ignore non-tool accounts like 'root'
-
+    return name  # T168653
 
 def tools_members(tools):
     """
