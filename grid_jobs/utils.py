@@ -56,7 +56,7 @@ class Cache(object):
 
 def tail_lines(filename, nbytes):
     """Get lines from last n bytes from the filename as an iterator."""
-    with open(filename, 'r') as f:
+    with open(filename, 'rb') as f:
         try:
             f.seek(-nbytes, os.SEEK_END)
         except IOError:
@@ -69,7 +69,7 @@ def tail_lines(filename, nbytes):
         # We can't simply `return f` as the returned f will be closed
         # Do all the IO within this function
         for line in f:
-            yield line
+            yield line.decode('utf-8')
 
 
 def totimestamp(dt, epoch=None):
