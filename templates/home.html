@@ -1,9 +1,9 @@
 {% extends "layout.html" %}
 {% block body %}
-<h1>Tools running jobs on OGE hosts in the last 7 days</h1>
+<h1>Tools running jobs on OGE hosts in the last {{ days }} days</h1>
 
 <p>Total tools that ran jobs: <var>{{ tools|count }}</var></p>
-<p>Total jobs that ran: <var>{{ total_seen }}</var></p>
+<p>Total jobs that ran: <var>{{ '{:,d}'.format(total_seen) }}</var></p>
 <p>Last updated: <var>{{ generated }}</var></p>
 
 <table id="jobs">

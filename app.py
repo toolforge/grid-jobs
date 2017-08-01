@@ -39,6 +39,7 @@ def duration(days):
         cached = 'purge' not in flask.request.args
         gd = grid_jobs.get_view_data(days=days, cached=cached)
         ctx = {
+            'days': days,
             'generated': gd['generated'],
             'tools': {},
             'total_seen': 0,
