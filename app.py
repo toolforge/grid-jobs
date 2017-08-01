@@ -30,18 +30,25 @@ app = flask.Flask(__name__)
 
 @app.route('/')
 def home():
+    return duration(7)
+
+
+@app.route('/days/<int:days>')
+def duration(days):
     try:
         cached = 'purge' not in flask.request.args
-        gd = grid_jobs.get_view_data(days=7, cached=cached)
+        gd = grid_jobs.get_view_data(days=days, cached=cached)
         ctx = {
             'generated': gd['generated'],
             'tools': {},
+            'total_seen': 0,
         }
         for name, tool in gd['tools'].items():
             ctx['tools'][name] = {
                 'seen': sum(j['count'] for j in tool['jobs'].values()),
                 'unique': len(tool['jobs'].values()),
             }
+            ctx['total_seen'] += ctx['tools'][name]['seen']
         return flask.render_template('home.html', **ctx)
     except Exception:
         traceback.print_exc()

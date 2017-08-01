@@ -108,6 +108,7 @@ def normalize_toolname(name):
         return name[6:]
     return name  # T168653
 
+
 def tools_members(tools):
     """
     Return a dict that has members of a tool associated with each tool
