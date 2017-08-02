@@ -2,9 +2,18 @@
 {% block body %}
 <h1>Tools running jobs on OGE hosts in the last {{ days }} days</h1>
 
-<p>Total tools that ran jobs: <var>{{ tools|count }}</var></p>
-<p>Total jobs that ran: <var>{{ '{:,d}'.format(total_seen) }}</var></p>
-<p>Last updated: <var>{{ generated }}</var></p>
+<div id="stats">
+  <dl>
+    <dt>Total tools that ran jobs</dt>
+    <dd><var>{{ '{:,d}'.format(tools_count) }}</var></dd>
+    <dt>Total jobs that ran</dt>
+    <dd><var>{{ '{:,d}'.format(total_seen) }}</var></dd>
+    <dt>Active jobs</dt>
+    <dd><var>{{ '{:,d}'.format(total_active) }}</var></dd>
+    <dt>Last updated</dt>
+    <dd><var>{{ generated }}</var></dd>
+  </dl>
+</div>
 
 <table id="jobs">
   <thead>

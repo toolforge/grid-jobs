@@ -42,7 +42,9 @@ def duration(days):
             'days': days,
             'generated': gd['generated'],
             'tools': {},
+            'tools_count': len(gd['tools']),
             'total_seen': 0,
+            'total_active': 0,
         }
         for name, tool in gd['tools'].items():
             ctx['tools'][name] = {
@@ -51,6 +53,7 @@ def duration(days):
                 'active': sum(j['active'] for j in tool['jobs'].values()),
             }
             ctx['total_seen'] += ctx['tools'][name]['seen']
+            ctx['total_active'] += ctx['tools'][name]['active']
         return flask.render_template('home.html', **ctx)
     except Exception:
         traceback.print_exc()
