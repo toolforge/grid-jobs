@@ -2,20 +2,22 @@
 {% block body %}
 <h1>Jobs run by {{ tool_name }} in the last 7 days</h1>
 
-<div id="tool-details">
-  <dl>
-    <dt>Tool</dt>
-    <dd><a href="https://tools.wmflabs.org/?tool={{ tool_name|urlencode }}">{{ tool_name }}</a></dd>
-    <dt>Members</dt>
-    <dd class="members">
+<table id="tool-details">
+  <tr>
+    <th>Tool</th>
+    <td><a href="https://tools.wmflabs.org/?tool={{ tool_name|urlencode }}">{{ tool_name }}</a></td>
+  </tr>
+  <tr>
+    <th>Members</th>
+    <td class="members">
       <ul>
         {% for member in tool_data.members %}
         <li><a href="https://tools.wmflabs.org/contact/search/{{ member|urlencode }}">{{ member }}</a></li>
         {% endfor %}
       </ul>
-    </dd>
-  </dl>
-</div>
+    </td>
+  </tr>
+</table>
 
 <table id="jobs">
   <thead>

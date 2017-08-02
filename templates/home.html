@@ -2,20 +2,28 @@
 {% block body %}
 <h1>Tools running jobs on OGE hosts in the last {{ days }} days</h1>
 
-<div id="stats">
-  <dl>
-    <dt>Total tools that ran jobs</dt>
-    <dd><var>{{ '{:,d}'.format(tools_count) }}</var></dd>
-    <dt>Total jobs that ran</dt>
-    <dd><var>{{ '{:,d}'.format(total_seen) }}</var></dd>
-    <dt>Active jobs</dt>
-    <dd><var>{{ '{:,d}'.format(total_active) }}</var></dd>
-    <dt>Last updated</dt>
-    <dd><var>{{ generated }}</var></dd>
-  </dl>
-</div>
+<table id="stats">
+  <tr>
+    <th>Total tools that ran jobs</th>
+    <td class="number"><var>{{ '{:,d}'.format(tools_count) }}</var></td>
+  </tr>
+  <tr>
+    <th>Total jobs that ran</th>
+    <td class="number"><var>{{ '{:,d}'.format(total_seen) }}</var></td>
+  </tr>
+  <tr>
+    <th>Active jobs</th>
+    <td class="number"><var>{{ '{:,d}'.format(total_active) }}</var></td>
+  </tr>
+  <tr>
+    <th>Last updated</th>
+    <td class="number"><var>{{ generated }}</var></td>
+  </tr>
+</table>
 
-<table id="jobs">
+<img class="graph" src="https://graphite-labs.wikimedia.org/render?title=Toolforge+grid+jobs&yMin=0&width=400&height=200&target=cactiStyle(alias(sumSeries(tools.tools-services-01.sge.hosts.tools-*.job_count),%27jobs%27))&from=-{{ days }}d" width="400" height="200">
+
+<table id="jobs" class="striped">
   <thead>
     <tr>
       <th>Tool</th>
