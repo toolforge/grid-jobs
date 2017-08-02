@@ -22,6 +22,7 @@
     <tr>
       <th>Job</th>
       <th>Total seen</th>
+      <th>Active</th>
       <th>Last seen (exit)</th>
     </tr>
   </thead>
@@ -30,6 +31,7 @@
     <tr>
       <td>{{ job }}</td>
       <td class="number">{{ data.count }}</td>
+      <td class="number">{{ data.active }}</td>
       <td>{{ data.last }}</td>
     </tr>
     {% endfor %}

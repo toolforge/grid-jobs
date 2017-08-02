@@ -172,6 +172,7 @@ def get_view_data(days=7, cached=True):
             'jobs': collections.defaultdict(lambda: {
                 'count': 0,
                 'last': '',
+                'active': 0,
             }),
             'members': [],
         })
@@ -182,6 +183,7 @@ def get_view_data(days=7, cached=True):
                 datetime.datetime.fromtimestamp(rec[3]).strftime(date_fmt))
 
         for rec in gridengine_status():
+            tools[rec[0]]['jobs'][rec[1]]['active'] += 1
             tools[rec[0]]['jobs'][rec[1]]['count'] += 1
             tools[rec[0]]['jobs'][rec[1]]['last'] = 'Currently running'
 

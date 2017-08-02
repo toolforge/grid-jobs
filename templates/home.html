@@ -11,6 +11,7 @@
     <tr>
       <th>Tool</th>
       <th data-sort-method="number">Unique jobs</th>
+      <th data-sort-method="number">Active jobs</th>
       <th data-sort-method="number" data-sort-default>Jobs seen</th>
     </tr>
   </thead>
@@ -21,6 +22,7 @@
           <a href="{{ url_for('tool', name=name) }}">{{ name }}</a>
       </td>
       <td class="number">{{ data.unique }}</td>
+      <td class="number">{{ data.active }}</td>
       <td class="number">{{ data.seen }}</td>
     </tr>
     {% endfor %}

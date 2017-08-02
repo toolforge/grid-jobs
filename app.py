@@ -48,6 +48,7 @@ def duration(days):
             ctx['tools'][name] = {
                 'seen': sum(j['count'] for j in tool['jobs'].values()),
                 'unique': len(tool['jobs'].values()),
+                'active': sum(j['active'] for j in tool['jobs'].values()),
             }
             ctx['total_seen'] += ctx['tools'][name]['seen']
         return flask.render_template('home.html', **ctx)
