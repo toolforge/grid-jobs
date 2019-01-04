@@ -46,19 +46,23 @@ def tools_from_accounting(days):
     cutoff = int(utils.totimestamp(datetime.datetime.now() - delta))
     jobs = collections.defaultdict(lambda: collections.defaultdict(list))
     files = [
-        '/data/project/.system/accounting'
+        '/data/project/.system/accounting',
+        '/data/project/.system/accounting.1',
     ]
     for f in files:
-        for line in utils.tail_lines(f, 400 * 45000 * days):
-            parts = line.split(':')
-            job = dict(zip(ACCOUNTING_FIELDS, parts))
-            if int(job['end_time']) < cutoff:
-                continue
+        try:
+            for line in utils.tail_lines(f, 400 * 45000 * days):
+                parts = line.split(':')
+                job = dict(zip(ACCOUNTING_FIELDS, parts))
+                if int(job['end_time']) < cutoff:
+                    continue
 
-            tool = job['owner']
-            if tool is not None:
-                name = job['job_name']
-                jobs[tool][name].append(int(job['end_time']))
+                tool = job['owner']
+                if tool is not None:
+                    name = job['job_name']
+                    jobs[tool][name].append(int(job['end_time']))
+        except FileNotFoundError:
+            print(e)
 
     tools = []
     for tool_name, tool_jobs in jobs.items():
@@ -77,7 +81,7 @@ def tools_from_accounting(days):
 def gridengine_status():
     """Get a list of (tool, job name, host) tuples for jobs currently running
     on exec nodes."""
-    conn = http.client.HTTPConnection('tools.wmflabs.org')
+    conn = http.client.HTTPSConnection('tools.wmflabs.org')
     conn.request(
         'GET', '/gridengine-status',
         headers={
