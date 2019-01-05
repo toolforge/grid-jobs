@@ -61,7 +61,7 @@ def tools_from_accounting(days):
                 if tool is not None:
                     name = job['job_name']
                     jobs[tool][name].append(int(job['end_time']))
-        except FileNotFoundError:
+        except FileNotFoundError as e:
             print(e)
 
     tools = []
