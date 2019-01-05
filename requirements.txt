@@ -2,3 +2,4 @@ flask
 ldap3
 redis>=3.0
 requests
+toolforge
