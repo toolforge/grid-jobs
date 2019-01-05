@@ -46,8 +46,8 @@ def tools_from_accounting(days):
     cutoff = int(utils.totimestamp(datetime.datetime.now() - delta))
     jobs = collections.defaultdict(lambda: collections.defaultdict(list))
     files = [
-        '/data/project/.system/accounting',
-        '/data/project/.system/accounting.1',
+        '/data/project/.system_sge/gridengine/default/common/accounting',
+        '/data/project/.system_sge/gridengine/default/common/accounting.1',
     ]
     for f in files:
         try:
@@ -83,9 +83,9 @@ def gridengine_status():
     on exec nodes."""
     conn = http.client.HTTPSConnection('tools.wmflabs.org')
     conn.request(
-        'GET', '/gridengine-status',
+        'GET', '/sge-status',
         headers={
-            'User-Agent': 'https://tools.wmflabs.org/grid-jobs/'
+            'User-Agent': 'https://tools.wmflabs.org/sge-jobs/'
         }
     )
     res = conn.getresponse().read()
