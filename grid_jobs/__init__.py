@@ -18,10 +18,9 @@
 
 import collections
 import datetime
-import http.client
-import json
 
 import ldap3
+import requests
 
 from . import utils
 
@@ -84,17 +83,8 @@ def tools_from_accounting(days):
 def gridengine_status():
     """Get a list of (tool, job name, host) tuples for jobs currently running
     on exec nodes."""
-    conn = http.client.HTTPSConnection('tools.wmflabs.org')
-    conn.request(
-        'GET', '/sge-status',
-        headers={
-            'User-Agent': 'https://tools.wmflabs.org/sge-jobs/'
-        }
-    )
-    res = conn.getresponse().read()
-    grid_info = {}
-    if res:
-        grid_info = json.loads(res.decode('utf-8'))['data']['attributes']
+    r = requests.get('https://tools.wmflabs.org/sge-status/')
+    grid_info = r.json()['data']['attributes']
 
     tools = []
     for host, info in grid_info.items():
