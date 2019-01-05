@@ -54,6 +54,9 @@ def tools_from_accounting(days):
             for line in utils.tail_lines(f, 400 * 45000 * days):
                 parts = line.split(':')
                 job = dict(zip(ACCOUNTING_FIELDS, parts))
+                if 'end_time' not in job:
+                    print('bad line? {}'.format(line))
+                    continue
                 if int(job['end_time']) < cutoff:
                     continue
 
