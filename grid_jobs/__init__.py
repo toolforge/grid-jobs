@@ -83,7 +83,7 @@ def tools_from_accounting(days):
 def gridengine_status():
     """Get a list of (tool, job name, host) tuples for jobs currently running
     on exec nodes."""
-    r = requests.get('https://tools.wmflabs.org/sge-status/')
+    r = requests.get('https://tools.wmflabs.org/sge-status/api/v1/')
     grid_info = r.json()['data']['attributes']
 
     tools = []
