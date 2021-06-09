@@ -18,11 +18,14 @@
 
 import collections
 import datetime
+import re
 
 import ldap3
 import requests
 
 from . import utils
+
+RELEASE_REGEX = re.compile(r"release=([a-z]+)")
 
 ACCOUNTING_FIELDS = [
     'qname', 'hostname', 'group', 'owner', 'job_name', 'job_number',
@@ -38,12 +41,20 @@ ACCOUNTING_FIELDS = [
 CACHE = utils.Cache()
 
 
+def parse_release(job):
+    data = job['category']
+    matches = RELEASE_REGEX.search(data)
+    if matches:
+        return matches.group(1)
+    return 'default'
+
+
 def tools_from_accounting(days):
-    """Get a list of (tool, job name, count, last) tuples for jobs running on
+    """Get a list of (tool, job name, count, last, per_release) tuples for jobs running on
     exec nodes in the last N days."""
     delta = datetime.timedelta(days=days)
     cutoff = int(utils.totimestamp(datetime.datetime.now() - delta))
-    jobs = collections.defaultdict(lambda: collections.defaultdict(list))
+    jobs = collections.defaultdict(lambda: collections.defaultdict(lambda: collections.defaultdict(list)))
     files = [
         '/data/project/.system_sge/gridengine/default/common/accounting',
         '/data/project/.system_sge/gridengine/default/common/accounting.1',
@@ -62,7 +73,8 @@ def tools_from_accounting(days):
                 tool = job['owner']
                 if tool is not None:
                     name = job['job_name']
-                    jobs[tool][name].append(int(job['end_time']))
+                    release = parse_release(job)
+                    jobs[tool][name][release].append(int(job['end_time']))
         except FileNotFoundError as e:
             print(e)
 
@@ -70,20 +82,31 @@ def tools_from_accounting(days):
     for tool_name, tool_jobs in jobs.items():
         tool_name = normalize_toolname(tool_name)
         if tool_name is not None:
-            for job_name, job_starts in tool_jobs.items():
+            for job_name, job_starts_per_release in tool_jobs.items():
+                per_release = dict()
+                job_starts = []
+                for release_name, release_starts in job_starts_per_release.items():
+                    job_starts.extend(release_starts)
+                    per_release[release_name] = {
+                        'count': len(release_starts),
+                        'last': max(release_starts),
+                        'active': 0,
+                    }
+
                 tools.append((
                     tool_name,
                     job_name,
                     len(job_starts),
-                    max(job_starts)
+                    max(job_starts),
+                    per_release
                 ))
     return tools
 
 
 def gridengine_status():
-    """Get a list of (tool, job name, host) tuples for jobs currently running
-    on exec nodes."""
-    r = requests.get('https://tools.wmflabs.org/sge-status/api/v1/')
+    """Get a list of (tool, job name, host, release) tuples for jobs currently
+    running on exec nodes."""
+    r = requests.get('https://sge-status.toolforge.org/api/v1/')
     grid_info = r.json()['data']['attributes']
 
     tools = []
@@ -93,7 +116,8 @@ def gridengine_status():
                 (
                     normalize_toolname(job['job_owner']),
                     job['job_name'],
-                    host
+                    host,
+                    job.get('release', 'default'),
                 )
                 for job in info['jobs'].values()
             ])
@@ -143,6 +167,12 @@ def get_view_data(days=7, cached=True):
                         'job X': {
                             'count': N,
                             'last': datetime,
+                            'per_release': {
+                                'buster': {
+                                    'count': N,
+                                    'last': datetime,
+                                }
+                            }
                         },
                         'job Y': {
                             'count': N,
@@ -170,19 +200,31 @@ def get_view_data(days=7, cached=True):
                 'count': 0,
                 'last': '',
                 'active': 0,
+                'per_release': {}
             }),
             'members': [],
         })
 
-        for rec in tools_from_accounting(days):
-            tools[rec[0]]['jobs'][rec[1]]['count'] += rec[2]
-            tools[rec[0]]['jobs'][rec[1]]['last'] = (
-                datetime.datetime.fromtimestamp(rec[3]).strftime(date_fmt))
+        for tool, job_name, count, last, per_release in tools_from_accounting(days):
+            tools[tool]['jobs'][job_name]['count'] += count
+            tools[tool]['jobs'][job_name]['last'] = (
+                datetime.datetime.fromtimestamp(last).strftime(date_fmt))
+            tools[tool]['jobs'][job_name]['per_release'] = per_release
 
-        for rec in gridengine_status():
-            tools[rec[0]]['jobs'][rec[1]]['active'] += 1
-            tools[rec[0]]['jobs'][rec[1]]['count'] += 1
-            tools[rec[0]]['jobs'][rec[1]]['last'] = 'Currently running'
+        for tool, job_name, host, release in gridengine_status():
+            tools[tool]['jobs'][job_name]['active'] += 1
+            tools[tool]['jobs'][job_name]['count'] += 1
+            tools[tool]['jobs'][job_name]['last'] = 'Currently running'
+
+            if release not in tools[tool]['jobs'][job_name]['per_release']:
+                tools[tool]['jobs'][job_name]['per_release'][release] = {
+                    'active': 0,
+                    'count': 0,
+                    'last': '',
+                }
+            tools[tool]['jobs'][job_name]['per_release'][release]['active'] += 1
+            tools[tool]['jobs'][job_name]['per_release'][release]['count'] += 1
+            tools[tool]['jobs'][job_name]['per_release'][release]['last'] = 'Currently running'
 
         for key, val in tools_members(tools.keys()).items():
             tools[key]['members'] = list(val)
