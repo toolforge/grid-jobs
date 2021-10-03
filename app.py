@@ -20,16 +20,11 @@
 import traceback
 
 import flask
-import flask.json
 import toolforge
-import werkzeug.contrib.fixers
 
 import grid_jobs
 
-
 app = flask.Flask(__name__)
-app.wsgi_app = werkzeug.contrib.fixers.ProxyFix(app.wsgi_app)
-app.before_request(toolforge.redirect_to_https)
 
 toolforge.set_user_agent('sge-jobs')
 
@@ -83,7 +78,7 @@ def tool(name):
 @app.route('/json')
 def json_dump():
     cached = 'purge' not in flask.request.args
-    return flask.json.jsonify(
+    return flask.jsonify(
         grid_jobs.get_view_data(days=7, cached=cached)
     )
 
