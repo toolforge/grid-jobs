@@ -5,14 +5,14 @@
 <table id="tool-details">
   <tr>
     <th>Tool</th>
-    <td><a href="https://tools.wmflabs.org/?tool={{ tool_name|urlencode }}">{{ tool_name }}</a></td>
+    <td><a href="https://toolsadmin.wikimedia.org/tools/id/{{ tool_name|urlencode }}">{{ tool_name }}</a></td>
   </tr>
   <tr>
     <th>Members</th>
     <td class="members">
       <ul>
         {% for member in tool_data.members %}
-        <li><a href="https://tools.wmflabs.org/contact/search/{{ member|urlencode }}">{{ member }}</a></li>
+        <li><a href="https://contact.toolforge.org/search/{{ member|urlencode }}">{{ member }}</a></li>
         {% endfor %}
       </ul>
     </td>
