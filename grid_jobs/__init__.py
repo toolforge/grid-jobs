@@ -275,7 +275,7 @@ def get_view_data(days=7, cached=True):
             ).strftime(date_fmt)
             tools[tool]["jobs"][job_name]["per_release"] = per_release
             tools[tool]["jobs"][job_name]["queues"] = list(
-                set(tools[tool]["jobs"][job_name]["queues"]) + queues
+                set(tools[tool]["jobs"][job_name]["queues"]) | queues
             )
 
         for tool, job_name, host, release in gridengine_status():
@@ -283,7 +283,7 @@ def get_view_data(days=7, cached=True):
             tools[tool]["jobs"][job_name]["count"] += 1
             tools[tool]["jobs"][job_name]["last"] = "Currently running"
             tools[tool]["jobs"][job_name]["queues"] = list(
-                set(tools[tool]["jobs"][job_name]["queues"]) + queues
+                set(tools[tool]["jobs"][job_name]["queues"]) | queues
             )
 
             if release not in tools[tool]["jobs"][job_name]["per_release"]:
