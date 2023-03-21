@@ -150,7 +150,7 @@ def tools_from_accounting(days):
                         len(job_starts),
                         max(job_starts),
                         per_release,
-                        queue_name,
+                        queue_names,
                     )
                 )
     return tools
