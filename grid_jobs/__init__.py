@@ -54,7 +54,7 @@ def tools_from_accounting(days):
     exec nodes in the last N days."""
     delta = datetime.timedelta(days=days)
     cutoff = int(utils.totimestamp(datetime.datetime.now() - delta))
-    jobs = collections.defaultdict(lambda: collections.defaultdict(lambda: collections.defaultdict(list)))
+    jobs = collections.defaultdict(lambda: collections.defaultdict(lambda: collections.defaultdict(lambda: collections.defaultdict(list))))
     files = [
         '/data/project/.system_sge/gridengine/default/common/accounting',
         '/data/project/.system_sge/gridengine/default/common/accounting.1',
@@ -72,9 +72,10 @@ def tools_from_accounting(days):
 
                 tool = job['owner']
                 if tool is not None:
+                    queue = job['qname']
                     name = job['job_name']
                     release = parse_release(job)
-                    jobs[tool][name][release].append(int(job['end_time']))
+                    jobs[tool][name][queue][release].append(int(job['end_time']))
         except FileNotFoundError as e:
             print(e)
 
@@ -82,23 +83,29 @@ def tools_from_accounting(days):
     for tool_name, tool_jobs in jobs.items():
         tool_name = normalize_toolname(tool_name)
         if tool_name is not None:
-            for job_name, job_starts_per_release in tool_jobs.items():
+            for job_name, job_starts_per_queue_and_release in tool_jobs.items():
                 per_release = dict()
                 job_starts = []
-                for release_name, release_starts in job_starts_per_release.items():
-                    job_starts.extend(release_starts)
-                    per_release[release_name] = {
-                        'count': len(release_starts),
-                        'last': max(release_starts),
-                        'active': 0,
-                    }
+                queue_names = set()
+
+                for queue_name, job_starts_per_release in job_starts_per_queue_and_release.items():
+                    queue_names.add(queue_name)
+
+                    for release_name, release_starts in job_starts_per_release.items():
+                        job_starts.extend(release_starts)
+                        per_release[release_name] = {
+                            'count': len(release_starts),
+                            'last': max(release_starts),
+                            'active': 0,
+                        }
 
                 tools.append((
                     tool_name,
                     job_name,
                     len(job_starts),
                     max(job_starts),
-                    per_release
+                    per_release,
+                    queue_name,
                 ))
     return tools
 
@@ -205,11 +212,12 @@ def get_view_data(days=7, cached=True):
             'members': [],
         })
 
-        for tool, job_name, count, last, per_release in tools_from_accounting(days):
+        for tool, job_name, count, last, per_release, queues in tools_from_accounting(days):
             tools[tool]['jobs'][job_name]['count'] += count
             tools[tool]['jobs'][job_name]['last'] = (
                 datetime.datetime.fromtimestamp(last).strftime(date_fmt))
             tools[tool]['jobs'][job_name]['per_release'] = per_release
+            tools[tool]['jobs'][job_name]['queues'] = list(queues)
 
         for tool, job_name, host, release in gridengine_status():
             tools[tool]['jobs'][job_name]['active'] += 1
