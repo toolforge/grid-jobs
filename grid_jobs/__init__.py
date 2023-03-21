@@ -278,13 +278,13 @@ def get_view_data(days=7, cached=True):
                 set(tools[tool]["jobs"][job_name]["queues"]) | queues
             )
 
-        for tool, job_name, host, release, queues in gridengine_status():
+        for tool, job_name, host, release, queue in gridengine_status():
             tools[tool]["jobs"][job_name]["active"] += 1
             tools[tool]["jobs"][job_name]["count"] += 1
             tools[tool]["jobs"][job_name]["last"] = "Currently running"
-            tools[tool]["jobs"][job_name]["queues"] = list(
-                set(tools[tool]["jobs"][job_name]["queues"]) | queues
-            )
+            
+            if queue not in tools[tool]["jobs"][job_name]["queues"]:
+                tools[tool]["jobs"][job_name]["queues"].append(queue)
 
             if release not in tools[tool]["jobs"][job_name]["per_release"]:
                 tools[tool]["jobs"][job_name]["per_release"][release] = {
