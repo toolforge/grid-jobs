@@ -172,6 +172,7 @@ def gridengine_status():
                         job["job_name"],
                         host,
                         job.get("release", "default"),
+                        job.get("queue", None),
                     )
                     for job in info["jobs"].values()
                 ]
@@ -253,7 +254,13 @@ def get_view_data(days=7, cached=True):
         tools = collections.defaultdict(
             lambda: {
                 "jobs": collections.defaultdict(
-                    lambda: {"count": 0, "last": "", "active": 0, "per_release": {}}
+                    lambda: {
+                        "count": 0,
+                        "last": "",
+                        "active": 0,
+                        "per_release": {},
+                        "queues": [],
+                    }
                 ),
                 "members": [],
             }
@@ -267,12 +274,17 @@ def get_view_data(days=7, cached=True):
                 last
             ).strftime(date_fmt)
             tools[tool]["jobs"][job_name]["per_release"] = per_release
-            tools[tool]["jobs"][job_name]["queues"] = list(queues)
+            tools[tool]["jobs"][job_name]["queues"] = list(
+                set(tools[tool]["jobs"][job_name]["queues"]) + queues
+            )
 
         for tool, job_name, host, release in gridengine_status():
             tools[tool]["jobs"][job_name]["active"] += 1
             tools[tool]["jobs"][job_name]["count"] += 1
             tools[tool]["jobs"][job_name]["last"] = "Currently running"
+            tools[tool]["jobs"][job_name]["queues"] = list(
+                set(tools[tool]["jobs"][job_name]["queues"]) + queues
+            )
 
             if release not in tools[tool]["jobs"][job_name]["per_release"]:
                 tools[tool]["jobs"][job_name]["per_release"][release] = {
