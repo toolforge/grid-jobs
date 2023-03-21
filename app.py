@@ -26,64 +26,62 @@ import grid_jobs
 
 app = flask.Flask(__name__)
 
-toolforge.set_user_agent('sge-jobs')
+toolforge.set_user_agent("sge-jobs")
 
 
-@app.route('/')
+@app.route("/")
 def home():
     return duration(7)
 
 
-@app.route('/days/<int:days>')
+@app.route("/days/<int:days>")
 def duration(days):
     try:
-        cached = 'purge' not in flask.request.args
+        cached = "purge" not in flask.request.args
         gd = grid_jobs.get_view_data(days=days, cached=cached)
         ctx = {
-            'days': days,
-            'generated': gd['generated'],
-            'tools': {},
-            'tools_count': len(gd['tools']),
-            'total_seen': 0,
-            'total_active': 0,
+            "days": days,
+            "generated": gd["generated"],
+            "tools": {},
+            "tools_count": len(gd["tools"]),
+            "total_seen": 0,
+            "total_active": 0,
         }
-        for name, tool in gd['tools'].items():
-            ctx['tools'][name] = {
-                'seen': sum(j['count'] for j in tool['jobs'].values()),
-                'unique': len(tool['jobs'].values()),
-                'active': sum(j['active'] for j in tool['jobs'].values()),
+        for name, tool in gd["tools"].items():
+            ctx["tools"][name] = {
+                "seen": sum(j["count"] for j in tool["jobs"].values()),
+                "unique": len(tool["jobs"].values()),
+                "active": sum(j["active"] for j in tool["jobs"].values()),
             }
-            ctx['total_seen'] += ctx['tools'][name]['seen']
-            ctx['total_active'] += ctx['tools'][name]['active']
-        return flask.render_template('home.html', **ctx)
+            ctx["total_seen"] += ctx["tools"][name]["seen"]
+            ctx["total_active"] += ctx["tools"][name]["active"]
+        return flask.render_template("home.html", **ctx)
     except Exception:
         traceback.print_exc()
         raise
 
 
-@app.route('/tool/<name>')
+@app.route("/tool/<name>")
 def tool(name):
     gd = grid_jobs.get_view_data()
     ctx = {
-        'tool_name': name,
-        'generated': gd['generated'],
+        "tool_name": name,
+        "generated": gd["generated"],
     }
     try:
-        ctx['tool_data'] = gd['tools'][name]
+        ctx["tool_data"] = gd["tools"][name]
     except KeyError:
         flask.abort(404)
-    return flask.render_template('tool.html', **ctx)
+    return flask.render_template("tool.html", **ctx)
 
 
-@app.route('/json')
+@app.route("/json")
 def json_dump():
-    cached = 'purge' not in flask.request.args
-    return flask.jsonify(
-        grid_jobs.get_view_data(days=7, cached=cached)
-    )
+    cached = "purge" not in flask.request.args
+    return flask.jsonify(grid_jobs.get_view_data(days=7, cached=cached))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run()
 
 # vim:sw=4:ts=4:sts=4:et:

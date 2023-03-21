@@ -28,25 +28,62 @@ from . import utils
 RELEASE_REGEX = re.compile(r"release=([a-z]+)")
 
 ACCOUNTING_FIELDS = [
-    'qname', 'hostname', 'group', 'owner', 'job_name', 'job_number',
-    'account', 'priority', 'submission_time', 'start_time', 'end_time',
-    'failed', 'exit_status', 'ru_wallclock', 'ru_utime', 'ru_stime',
-    'ru_maxrss', 'ru_ixrss', 'ru_ismrss', 'ru_idrss', 'ru_isrss', 'ru_minflt',
-    'ru_majflt', 'ru_nswap', 'ru_inblock', 'ru_oublock', 'ru_msgsnd',
-    'ru_msgrcv', 'ru_nsignals', 'ru_nvcsw', 'ru_nivcsw', 'project',
-    'department', 'granted_pe', 'slots', 'task_number', 'cpu', 'mem', 'io',
-    'category', 'iow', 'pe_taskid', 'maxvemem', 'arid', 'ar_submission_time',
+    "qname",
+    "hostname",
+    "group",
+    "owner",
+    "job_name",
+    "job_number",
+    "account",
+    "priority",
+    "submission_time",
+    "start_time",
+    "end_time",
+    "failed",
+    "exit_status",
+    "ru_wallclock",
+    "ru_utime",
+    "ru_stime",
+    "ru_maxrss",
+    "ru_ixrss",
+    "ru_ismrss",
+    "ru_idrss",
+    "ru_isrss",
+    "ru_minflt",
+    "ru_majflt",
+    "ru_nswap",
+    "ru_inblock",
+    "ru_oublock",
+    "ru_msgsnd",
+    "ru_msgrcv",
+    "ru_nsignals",
+    "ru_nvcsw",
+    "ru_nivcsw",
+    "project",
+    "department",
+    "granted_pe",
+    "slots",
+    "task_number",
+    "cpu",
+    "mem",
+    "io",
+    "category",
+    "iow",
+    "pe_taskid",
+    "maxvemem",
+    "arid",
+    "ar_submission_time",
 ]
 
 CACHE = utils.Cache()
 
 
 def parse_release(job):
-    data = job['category']
+    data = job["category"]
     matches = RELEASE_REGEX.search(data)
     if matches:
         return matches.group(1)
-    return 'default'
+    return "default"
 
 
 def tools_from_accounting(days):
@@ -54,28 +91,32 @@ def tools_from_accounting(days):
     exec nodes in the last N days."""
     delta = datetime.timedelta(days=days)
     cutoff = int(utils.totimestamp(datetime.datetime.now() - delta))
-    jobs = collections.defaultdict(lambda: collections.defaultdict(lambda: collections.defaultdict(lambda: collections.defaultdict(list))))
+    jobs = collections.defaultdict(
+        lambda: collections.defaultdict(
+            lambda: collections.defaultdict(lambda: collections.defaultdict(list))
+        )
+    )
     files = [
-        '/data/project/.system_sge/gridengine/default/common/accounting',
-        '/data/project/.system_sge/gridengine/default/common/accounting.1',
+        "/data/project/.system_sge/gridengine/default/common/accounting",
+        "/data/project/.system_sge/gridengine/default/common/accounting.1",
     ]
     for f in files:
         try:
             for line in utils.tail_lines(f, 400 * 45000 * days):
-                parts = line.split(':')
+                parts = line.split(":")
                 job = dict(zip(ACCOUNTING_FIELDS, parts))
-                if 'end_time' not in job:
-                    print('bad line? {}'.format(line))
+                if "end_time" not in job:
+                    print("bad line? {}".format(line))
                     continue
-                if int(job['end_time']) < cutoff:
+                if int(job["end_time"]) < cutoff:
                     continue
 
-                tool = job['owner']
+                tool = job["owner"]
                 if tool is not None:
-                    queue = job['qname']
-                    name = job['job_name']
+                    queue = job["qname"]
+                    name = job["job_name"]
                     release = parse_release(job)
-                    jobs[tool][name][queue][release].append(int(job['end_time']))
+                    jobs[tool][name][queue][release].append(int(job["end_time"]))
         except FileNotFoundError as e:
             print(e)
 
@@ -88,51 +129,58 @@ def tools_from_accounting(days):
                 job_starts = []
                 queue_names = set()
 
-                for queue_name, job_starts_per_release in job_starts_per_queue_and_release.items():
+                for (
+                    queue_name,
+                    job_starts_per_release,
+                ) in job_starts_per_queue_and_release.items():
                     queue_names.add(queue_name)
 
                     for release_name, release_starts in job_starts_per_release.items():
                         job_starts.extend(release_starts)
                         per_release[release_name] = {
-                            'count': len(release_starts),
-                            'last': max(release_starts),
-                            'active': 0,
+                            "count": len(release_starts),
+                            "last": max(release_starts),
+                            "active": 0,
                         }
 
-                tools.append((
-                    tool_name,
-                    job_name,
-                    len(job_starts),
-                    max(job_starts),
-                    per_release,
-                    queue_name,
-                ))
+                tools.append(
+                    (
+                        tool_name,
+                        job_name,
+                        len(job_starts),
+                        max(job_starts),
+                        per_release,
+                        queue_name,
+                    )
+                )
     return tools
 
 
 def gridengine_status():
     """Get a list of (tool, job name, host, release) tuples for jobs currently
     running on exec nodes."""
-    r = requests.get('https://sge-status.toolforge.org/api/v1/')
-    grid_info = r.json()['data']['attributes']
+    r = requests.get("https://sge-status.toolforge.org/api/v1/")
+    grid_info = r.json()["data"]["attributes"]
 
     tools = []
     for host, info in grid_info.items():
-        if info['jobs']:
-            tools.extend([
-                (
-                    normalize_toolname(job['job_owner']),
-                    job['job_name'],
-                    host,
-                    job.get('release', 'default'),
-                )
-                for job in info['jobs'].values()
-            ])
+        if info["jobs"]:
+            tools.extend(
+                [
+                    (
+                        normalize_toolname(job["job_owner"]),
+                        job["job_name"],
+                        host,
+                        job.get("release", "default"),
+                    )
+                    for job in info["jobs"].values()
+                ]
+            )
     return tools
 
 
 def normalize_toolname(name):
-    if name.startswith('tools.'):
+    if name.startswith("tools."):
         return name[6:]
     return name  # T168653
 
@@ -148,15 +196,15 @@ def tools_members(tools):
     with utils.ldap_conn() as conn:
         for tool in tools:
             conn.search(
-                'ou=servicegroups,dc=wikimedia,dc=org',
-                '(cn=tools.{})'.format(tool),
+                "ou=servicegroups,dc=wikimedia,dc=org",
+                "(cn=tools.{})".format(tool),
                 ldap3.SUBTREE,
-                attributes=['member', 'cn'],
-                time_limit=5
+                attributes=["member", "cn"],
+                time_limit=5,
             )
             for resp in conn.response:
-                attributes = resp.get('attributes')
-                for member in attributes.get('member', []):
+                attributes = resp.get("attributes")
+                for member in attributes.get("member", []):
                     tool_to_members[tool].add(utils.uid_from_dn(member))
     return tool_to_members
 
@@ -198,48 +246,52 @@ def get_view_data(days=7, cached=True):
         }
     """
 
-    cache_key = 'maindict:days={}'.format(days)
+    cache_key = "maindict:days={}".format(days)
     ctx = CACHE.load(cache_key) if cached else None
     if ctx is None:
-        date_fmt = '%Y-%m-%d %H:%M'
-        tools = collections.defaultdict(lambda: {
-            'jobs': collections.defaultdict(lambda: {
-                'count': 0,
-                'last': '',
-                'active': 0,
-                'per_release': {}
-            }),
-            'members': [],
-        })
+        date_fmt = "%Y-%m-%d %H:%M"
+        tools = collections.defaultdict(
+            lambda: {
+                "jobs": collections.defaultdict(
+                    lambda: {"count": 0, "last": "", "active": 0, "per_release": {}}
+                ),
+                "members": [],
+            }
+        )
 
-        for tool, job_name, count, last, per_release, queues in tools_from_accounting(days):
-            tools[tool]['jobs'][job_name]['count'] += count
-            tools[tool]['jobs'][job_name]['last'] = (
-                datetime.datetime.fromtimestamp(last).strftime(date_fmt))
-            tools[tool]['jobs'][job_name]['per_release'] = per_release
-            tools[tool]['jobs'][job_name]['queues'] = list(queues)
+        for tool, job_name, count, last, per_release, queues in tools_from_accounting(
+            days
+        ):
+            tools[tool]["jobs"][job_name]["count"] += count
+            tools[tool]["jobs"][job_name]["last"] = datetime.datetime.fromtimestamp(
+                last
+            ).strftime(date_fmt)
+            tools[tool]["jobs"][job_name]["per_release"] = per_release
+            tools[tool]["jobs"][job_name]["queues"] = list(queues)
 
         for tool, job_name, host, release in gridengine_status():
-            tools[tool]['jobs'][job_name]['active'] += 1
-            tools[tool]['jobs'][job_name]['count'] += 1
-            tools[tool]['jobs'][job_name]['last'] = 'Currently running'
+            tools[tool]["jobs"][job_name]["active"] += 1
+            tools[tool]["jobs"][job_name]["count"] += 1
+            tools[tool]["jobs"][job_name]["last"] = "Currently running"
 
-            if release not in tools[tool]['jobs'][job_name]['per_release']:
-                tools[tool]['jobs'][job_name]['per_release'][release] = {
-                    'active': 0,
-                    'count': 0,
-                    'last': '',
+            if release not in tools[tool]["jobs"][job_name]["per_release"]:
+                tools[tool]["jobs"][job_name]["per_release"][release] = {
+                    "active": 0,
+                    "count": 0,
+                    "last": "",
                 }
-            tools[tool]['jobs'][job_name]['per_release'][release]['active'] += 1
-            tools[tool]['jobs'][job_name]['per_release'][release]['count'] += 1
-            tools[tool]['jobs'][job_name]['per_release'][release]['last'] = 'Currently running'
+            tools[tool]["jobs"][job_name]["per_release"][release]["active"] += 1
+            tools[tool]["jobs"][job_name]["per_release"][release]["count"] += 1
+            tools[tool]["jobs"][job_name]["per_release"][release][
+                "last"
+            ] = "Currently running"
 
         for key, val in tools_members(tools.keys()).items():
-            tools[key]['members'] = list(val)
+            tools[key]["members"] = list(val)
 
         ctx = {
-            'generated': datetime.datetime.now().strftime(date_fmt),
-            'tools': tools,
+            "generated": datetime.datetime.now().strftime(date_fmt),
+            "tools": tools,
         }
         CACHE.save(cache_key, ctx)
     return ctx
