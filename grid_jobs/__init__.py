@@ -282,7 +282,7 @@ def get_view_data(days=7, cached=True):
             tools[tool]["jobs"][job_name]["active"] += 1
             tools[tool]["jobs"][job_name]["count"] += 1
             tools[tool]["jobs"][job_name]["last"] = "Currently running"
-            
+
             if queue not in tools[tool]["jobs"][job_name]["queues"]:
                 tools[tool]["jobs"][job_name]["queues"].append(queue)
 
