@@ -26,6 +26,7 @@
       table {border-collapse:collapse;border:1px solid #ddd;margin:0 auto;}
       th, td {border:1px solid #ddd;padding:.5em;}
       th {font-weight:bold;}
+      strong {font-weight: bold;}
       #jobs th {background-color:#900;color:#eee;border:1px solid #ddd;}
       .striped tr:nth-child(even) {background-color:#f2f2f2;}
       td {vertical-align:top;}
@@ -37,6 +38,7 @@
       .graph {display:block;margin:0 auto;}
       footer {clear:both;margin-top:2em;padding-top:1em;border-top:1px solid #333;text-align:right;}
       #powered-by {float:left;}
+      #deprecation-note { background-color: #fff9ea; border: 1px solid #fc3; padding: 0.5em; }
       /*From http://tristen.ca/tablesort/tablesort.css*/
       th[role=columnheader]:not(.no-sort) {
         cursor: pointer;
@@ -71,6 +73,11 @@
     </style>
   </head>
   <body>
+    <div id="deprecation-note">
+      <strong>The Toolforge Grid Engine is deprecated and planned to be shut down in early 2024.</strong>
+      You should migrate any tools still running on the Grid Engine to newer runtimes.
+      For details, see <a href="https://wikitech.wikimedia.org/wiki/News/Toolforge_Grid_Engine_deprecation">News/Toolforge Grid Engine deprecation.</a>
+    </div>
     {% block body %}{% endblock %}
     <footer>
       <div id="powered-by">
