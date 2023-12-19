@@ -35,7 +35,7 @@
     <tr>
       <td id="{{ name }}" class="tool-name">
           <a href="{{ url_for('tool', name=name) }}">{{ name }}</a>
-          {% if tool_data.disabled %}
+          {% if data.disabled %}
           (grid access disabled)
           {% endif %}
       </td>
