@@ -19,6 +19,7 @@
 import collections
 import datetime
 import re
+from pathlib import Path
 
 import ldap3
 import requests
@@ -263,6 +264,7 @@ def get_view_data(days=7, cached=True):
                     }
                 ),
                 "members": [],
+                "disabled": False,
             }
         )
 
@@ -298,8 +300,16 @@ def get_view_data(days=7, cached=True):
                 "last"
             ] = "Currently running"
 
+        tool_base_path = Path("/data/project")
         for key, val in tools_members(tools.keys()).items():
             tools[key]["members"] = list(val)
+
+            try:
+                tools[key]["disabled"] = (
+                    tool_base_path / key / "TOOL_DISABLED"
+                ).exists()
+            except PermissionError:
+                pass
 
         ctx = {
             "generated": datetime.datetime.now().strftime(date_fmt),

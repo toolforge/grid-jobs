@@ -7,6 +7,12 @@
     <th>Tool</th>
     <td><a href="https://toolsadmin.wikimedia.org/tools/id/{{ tool_name|urlencode }}">{{ tool_name }}</a></td>
   </tr>
+  {% if tool_data.disabled %}
+  <tr>
+    <th>Grid access disabled</th>
+    <td>Yes</td>
+  </tr>
+  {% endif %}
   <tr>
     <th>Members</th>
     <td class="members">
