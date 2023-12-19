@@ -52,6 +52,7 @@ def duration(days):
                 "seen": sum(j["count"] for j in tool["jobs"].values()),
                 "unique": len(tool["jobs"].values()),
                 "active": sum(j["active"] for j in tool["jobs"].values()),
+                "disabled": tool["disabled"],
             }
             ctx["total_seen"] += ctx["tools"][name]["seen"]
             ctx["total_active"] += ctx["tools"][name]["active"]
